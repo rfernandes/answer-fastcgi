@@ -21,35 +21,13 @@
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-#include <fastcgi++/http.hpp>
-#include <fastcgi++/protocol.hpp>
+#include "fastcgi++/http.hpp"
+#include "fastcgi++/protocol.hpp"
 
-#include "utf8_codecvt.hpp"
-
-void Fastcgipp::Http::charToString(const char* data, size_t size, std::wstring& string)
+namespace Fastcgipp
 {
-	const size_t bufferSize=512;
-	wchar_t buffer[bufferSize];
-	using namespace std;
 
-	if(size)
-	{
-		codecvt_base::result cr=codecvt_base::partial;
-		while(cr==codecvt_base::partial)
-		{{
-			wchar_t* it;
-			const char* tmpData;
-			mbstate_t conversionState = mbstate_t();
-			cr=use_facet<codecvt<wchar_t, char, mbstate_t> >(locale(locale::classic(), new utf8CodeCvt::utf8_codecvt_facet)).in(conversionState, data, data+size, tmpData, buffer, buffer+bufferSize, it);
-			string.append(buffer, it);
-			size-=tmpData-data;
-			data=tmpData;
-		}}
-		if(cr==codecvt_base::error) throw Exceptions::CodeCvt();
-	}
-}
-
-int Fastcgipp::Http::atoi(const char* start, const char* end)
+int Http::atoi(const char* start, const char* end)
 {
 	bool neg=false;
 	if(*start=='-')
@@ -64,7 +42,7 @@ int Fastcgipp::Http::atoi(const char* start, const char* end)
 	return neg?-result:result;
 }
 
-size_t Fastcgipp::Http::percentEscapedToRealBytes(const char* source, char* destination, size_t size)
+size_t Http::percentEscapedToRealBytes(const char* source, char* destination, size_t size)
 {
 	if (size < 1) return 0;
 
@@ -100,9 +78,7 @@ size_t Fastcgipp::Http::percentEscapedToRealBytes(const char* source, char* dest
 	return destination-start;
 }
 
-template void Fastcgipp::Http::Environment<char>::fill(const char* data, size_t size);
-template void Fastcgipp::Http::Environment<wchar_t>::fill(const char* data, size_t size);
-template<class charT> void Fastcgipp::Http::Environment<charT>::fill(const char* data, size_t size)
+void Http::Environment::fill(const char* data, size_t size)
 {
 	using namespace std;
 	using namespace boost;
@@ -134,7 +110,7 @@ template<class charT> void Fastcgipp::Http::Environment<charT>::fill(const char*
 						if(size > 0)
 						{
 							percentEscapedToRealBytes(source-size, buffer.get(), size);
-							pathInfo.push_back(std::basic_string<charT>());
+							pathInfo.push_back(std::string());
 							charToString(buffer.get(), size, pathInfo.back());
 						}
 						size=-1;						
@@ -245,9 +221,7 @@ template<class charT> void Fastcgipp::Http::Environment<charT>::fill(const char*
 	}}
 }
 
-template bool Fastcgipp::Http::Environment<char>::fillPostBuffer(const char* data, size_t size);
-template bool Fastcgipp::Http::Environment<wchar_t>::fillPostBuffer(const char* data, size_t size);
-template<class charT> bool Fastcgipp::Http::Environment<charT>::fillPostBuffer(const char* data, size_t size)
+bool Http::Environment::fillPostBuffer(const char* data, size_t size)
 {
 	if(!postBuffer)
 	{
@@ -266,9 +240,7 @@ template<class charT> bool Fastcgipp::Http::Environment<charT>::fillPostBuffer(c
 		return false;
 }
 
-template void Fastcgipp::Http::Environment<char>::parsePostsMultipart();
-template void Fastcgipp::Http::Environment<wchar_t>::parsePostsMultipart();
-template<class charT> void Fastcgipp::Http::Environment<charT>::parsePostsMultipart()
+void Http::Environment::parsePostsMultipart()
 {
 	using namespace std;
 
@@ -383,13 +355,13 @@ template<class charT> void Fastcgipp::Http::Environment<charT>::parsePostsMultip
 
 					if(nameSize != -1)
 					{
-						basic_string<charT> name;
+						string name;
 						charToString(nameStart, nameSize, name);
 
-						Post<charT>& thePost=posts[name];
+						Post& thePost=posts[name];
 						if(contentTypeSize != -1)
 						{
-							thePost.type=Post<charT>::file;
+							thePost.type=Post::file;
 							charToString(contentTypeStart, contentTypeSize, thePost.contentType);
 							if(filenameSize != -1) charToString(filenameStart, filenameSize, thePost.filename);
 							thePost.m_size=bodySize;
@@ -401,7 +373,7 @@ template<class charT> void Fastcgipp::Http::Environment<charT>::parsePostsMultip
 						}
 						else
 						{
-							thePost.type=Post<charT>::form;
+							thePost.type=Post::form;
 							charToString(bodyStart, bodySize, thePost.value);
 						}
 					}
@@ -423,9 +395,7 @@ template<class charT> void Fastcgipp::Http::Environment<charT>::parsePostsMultip
 	}
 }
 
-template void Fastcgipp::Http::Environment<char>::parsePostsUrlEncoded();
-template void Fastcgipp::Http::Environment<wchar_t>::parsePostsUrlEncoded();
-template<class charT> void Fastcgipp::Http::Environment<charT>::parsePostsUrlEncoded()
+void Http::Environment::parsePostsUrlEncoded()
 {
 	char* nameStart=postBuffer.get();
 	size_t nameSize;
@@ -443,20 +413,20 @@ template<class charT> void Fastcgipp::Http::Environment<charT>::parsePostsUrlEnc
 		{
 			valueSize=percentEscapedToRealBytes(valueStart, valueStart, i-valueStart);
 
-			std::basic_string<charT> name;
+			std::string name;
 			charToString(nameStart, nameSize, name);
 			nameStart=i+1;
-			Post<charT>& thePost=posts[name];
-			thePost.type=Post<charT>::form;
+			Post& thePost=posts[name];
+			thePost.type=Post::form;
 			charToString(valueStart, valueSize, thePost.value);
 			valueStart=0;
 		}
 	}
 }
 
-bool Fastcgipp::Http::SessionId::seeded=false;
+bool Http::SessionId::seeded=false;
 
-Fastcgipp::Http::SessionId::SessionId()
+Http::SessionId::SessionId()
 {
 	if(!seeded)
 	{
@@ -469,9 +439,7 @@ Fastcgipp::Http::SessionId::SessionId()
 	timestamp = boost::posix_time::second_clock::universal_time();
 }
 
-template const Fastcgipp::Http::SessionId& Fastcgipp::Http::SessionId::operator=<const char>(const char* data_);
-template const Fastcgipp::Http::SessionId& Fastcgipp::Http::SessionId::operator=<const wchar_t>(const wchar_t* data_);
-template<class charT> const Fastcgipp::Http::SessionId& Fastcgipp::Http::SessionId::operator=(charT* data_)
+const Http::SessionId& Http::SessionId::operator=(char* data_)
 {
 	std::memset(data, 0, size);
 	base64Decode(data_, data_+size*4/3, data);
@@ -479,9 +447,7 @@ template<class charT> const Fastcgipp::Http::SessionId& Fastcgipp::Http::Session
 	return *this;
 }
 
-template void Fastcgipp::Http::decodeUrlEncoded<char>(const char* data, size_t size, std::map<std::basic_string<char>, std::basic_string<char> >& output, const char fieldSeperator);
-template void Fastcgipp::Http::decodeUrlEncoded<wchar_t>(const char* data, size_t size, std::map<std::basic_string<wchar_t>, std::basic_string<wchar_t> >& output, const char fieldSeperator);
-template<class charT> void Fastcgipp::Http::decodeUrlEncoded(const char* data, size_t size, std::map<std::basic_string<charT>, std::basic_string<charT> >& output, const char fieldSeperator)
+void Http::decodeUrlEncoded(const char* data, size_t size, std::map<std::string, std::string >& output, const char fieldSeperator)
 {
 	using namespace std;
 
@@ -500,10 +466,10 @@ template<class charT> void Fastcgipp::Http::decodeUrlEncoded(const char* data, s
 			{
 				valueSize=percentEscapedToRealBytes(valueStart, valueStart, i-valueStart);
 
-				basic_string<charT> name;
+				string name;
 				charToString(nameStart, nameSize, name);
 				nameStart=i+1;
-				basic_string<charT>& value=output[name];
+				string& value=output[name];
 				charToString(valueStart, valueSize, value);
 				valueStart=0;
 			}
@@ -520,8 +486,8 @@ template<class charT> void Fastcgipp::Http::decodeUrlEncoded(const char* data, s
 	}
 }
 
-const char Fastcgipp::Http::base64Characters[]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-const char* Fastcgipp::Http::requestMethodLabels[]= {
+const char Http::base64Characters[]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+const char* Http::requestMethodLabels[]= {
 	"ERROR",
 	"HEAD",
 	"GET",
@@ -533,65 +499,55 @@ const char* Fastcgipp::Http::requestMethodLabels[]= {
 	"CONNECT"
 };
 
-template const std::basic_string<char>& Fastcgipp::Http::Environment<char>::findCookie(const char* key) const;
-template const std::basic_string<wchar_t>& Fastcgipp::Http::Environment<wchar_t>::findCookie(const wchar_t* key) const;
-template<class charT> const std::basic_string<charT>& Fastcgipp::Http::Environment<charT>::findCookie(const charT* key) const
+const std::string& Http::Environment::findCookie(const char* key) const
 {
-	static const std::basic_string<charT> emptyString;
-	typename Cookies::const_iterator it=cookies.find(key);
+	static const std::string emptyString;
+	Cookies::const_iterator it=cookies.find(key);
 	if(it==cookies.end())
 		return emptyString;
 	else
 		return it->second;
 }
 
-template const std::basic_string<char>& Fastcgipp::Http::Environment<char>::findGet(const char* key) const;
-template const std::basic_string<wchar_t>& Fastcgipp::Http::Environment<wchar_t>::findGet(const wchar_t* key) const;
-template<class charT> const std::basic_string<charT>& Fastcgipp::Http::Environment<charT>::findGet(const charT* key) const
+const std::string& Http::Environment::findGet(const char* key) const
 {
-	static const std::basic_string<charT> emptyString;
-	typename Gets::const_iterator it=gets.find(key);
+	static const std::string emptyString;
+	Gets::const_iterator it=gets.find(key);
 	if(it==gets.end())
 		return emptyString;
 	else
 		return it->second;
 }
 
-template const Fastcgipp::Http::Post<char>& Fastcgipp::Http::Environment<char>::findPost(const char* key) const;
-template const Fastcgipp::Http::Post<wchar_t>& Fastcgipp::Http::Environment<wchar_t>::findPost(const wchar_t* key) const;
-template<class charT> const Fastcgipp::Http::Post<charT>& Fastcgipp::Http::Environment<charT>::findPost(const charT* key) const
+const Http::Post& Http::Environment::findPost(const char* key) const
 {
-	static const Post<charT> emptyPost;
-	typename Posts::const_iterator it=posts.find(key);
+	static const Post emptyPost;
+	Posts::const_iterator it=posts.find(key);
 	if(it==posts.end())
 		return emptyPost;
 	else
 		return it->second;
 }
 
-template bool Fastcgipp::Http::Environment<char>::checkForGet(const char* key) const;
-template bool Fastcgipp::Http::Environment<wchar_t>::checkForGet(const wchar_t* key) const;
-template<class charT> bool Fastcgipp::Http::Environment<charT>::checkForGet(const charT* key) const
+bool Http::Environment::checkForGet(const char* key) const
 {
-	typename Gets::const_iterator it=gets.find(key);
+	Gets::const_iterator it=gets.find(key);
 	if(it==gets.end())
 		return false;
 	else
 		return true;
 }
 
-template bool Fastcgipp::Http::Environment<char>::checkForPost(const char* key) const;
-template bool Fastcgipp::Http::Environment<wchar_t>::checkForPost(const wchar_t* key) const;
-template<class charT> bool Fastcgipp::Http::Environment<charT>::checkForPost(const charT* key) const
+bool Http::Environment::checkForPost(const char* key) const
 {
-	typename Posts::const_iterator it=posts.find(key);
+	Posts::const_iterator it=posts.find(key);
 	if(it==posts.end())
 		return false;
 	else
 		return true;
 }
 
-Fastcgipp::Http::Address& Fastcgipp::Http::Address::operator&=(const Address& x)
+Http::Address& Http::Address::operator&=(const Address& x)
 {
 	*(uint64_t*)m_data &= *(const uint64_t*)x.m_data;
 	*(uint64_t*)(m_data+size/2) &= *(const uint64_t*)(x.m_data+size/2);
@@ -599,7 +555,7 @@ Fastcgipp::Http::Address& Fastcgipp::Http::Address::operator&=(const Address& x)
 	return *this;
 }
 
-Fastcgipp::Http::Address Fastcgipp::Http::Address::operator&(const Address& x) const
+Http::Address Http::Address::operator&(const Address& x) const
 {
 	Address address(*this);
 	address &= x;
@@ -607,7 +563,7 @@ Fastcgipp::Http::Address Fastcgipp::Http::Address::operator&(const Address& x) c
 	return address;
 }
 
-void Fastcgipp::Http::Address::assign(const char* start, const char* end)
+void Http::Address::assign(const char* start, const char* end)
 {
 	const char* read=start-1;
 	unsigned char* write=m_data;
@@ -712,22 +668,20 @@ void Fastcgipp::Http::Address::assign(const char* start, const char* end)
 	}
 }
 
-template std::basic_ostream<char, std::char_traits<char> >& Fastcgipp::Http::operator<< <char, std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >& os, const Address& address);
-template std::basic_ostream<wchar_t, std::char_traits<wchar_t> >& Fastcgipp::Http::operator<< <wchar_t, std::char_traits<wchar_t> >(std::basic_ostream<wchar_t, std::char_traits<wchar_t> >& os, const Address& address);
-template<class charT, class Traits> std::basic_ostream<charT, Traits>& Fastcgipp::Http::operator<<(std::basic_ostream<charT, Traits>& os, const Address& address)
+std::ostream& Http::operator<<(std::ostream& os, const Address& address)
 {
 	using namespace std;
 	if(!os.good()) return os;
 	
 	try
 	{
-		typename basic_ostream<charT, Traits>::sentry opfx(os);
+		ostream::sentry opfx(os);
 		if(opfx)
 		{
 			streamsize fieldWidth=os.width(0);
-			charT buffer[40];
-			charT* bufPtr=buffer;
-			locale loc(os.getloc(), new num_put<charT, charT*>);
+			char buffer[40];
+			char* bufPtr=buffer;
+			locale loc(os.getloc(), new num_put<char, char*>);
 
 			const uint16_t* subStart=0;
 			const uint16_t* subEnd=0;
@@ -777,13 +731,13 @@ template<class charT, class Traits> std::basic_ostream<charT, Traits>& Fastcgipp
 				// It is an ipv4 address
 				*bufPtr++=os.widen(':');
 				*bufPtr++=os.widen(':');
-				bufPtr=use_facet<num_put<charT, charT*> >(loc).put(bufPtr, os, os.fill(), static_cast<unsigned long int>(0xffff));
+				bufPtr=use_facet<num_put<char, char*> >(loc).put(bufPtr, os, os.fill(), static_cast<unsigned long int>(0xffff));
 				*bufPtr++=os.widen(':');
 				os.setf(ios::dec, ios::basefield);
 
 				for(const unsigned char* it = address.data()+12; it < address.data()+Address::size; ++it)
 				{
-					bufPtr=use_facet<num_put<charT, charT*> >(loc).put(bufPtr, os, os.fill(), static_cast<unsigned long int>(*it));
+					bufPtr=use_facet<num_put<char, char*> >(loc).put(bufPtr, os, os.fill(), static_cast<unsigned long int>(*it));
 					*bufPtr++=os.widen('.');
 				}
 				--bufPtr;
@@ -802,7 +756,7 @@ template<class charT, class Traits> std::basic_ostream<charT, Traits>& Fastcgipp
 					}
 					else
 					{
-						bufPtr=use_facet<num_put<charT, charT*> >(loc).put(bufPtr, os, os.fill(), static_cast<unsigned long int>(Protocol::readBigEndian(*it)));
+						bufPtr=use_facet<num_put<char, char*> >(loc).put(bufPtr, os, os.fill(), static_cast<unsigned long int>(Protocol::readBigEndian(*it)));
 
 						if(it < (const uint16_t*)(address.data()+Address::size)-1)
 							*bufPtr++=os.widen(':');
@@ -812,8 +766,8 @@ template<class charT, class Traits> std::basic_ostream<charT, Traits>& Fastcgipp
 
 			os.flags(oldFlags);
 
-			charT* ptr=buffer;
-			ostreambuf_iterator<charT,Traits> sink(os);
+			char* ptr=buffer;
+			ostreambuf_iterator<char> sink(os);
 			if(os.flags() & ios_base::left)
 				for(int i=max(fieldWidth, bufPtr-buffer); i>0; i--)
 				{
@@ -849,9 +803,7 @@ template<class charT, class Traits> std::basic_ostream<charT, Traits>& Fastcgipp
 	return os;
 }
 
-template std::basic_istream<char, std::char_traits<char> >& Fastcgipp::Http::operator>> <char, std::char_traits<char> >(std::basic_istream<char, std::char_traits<char> >& is, Address& address);
-template std::basic_istream<wchar_t, std::char_traits<wchar_t> >& Fastcgipp::Http::operator>> <wchar_t, std::char_traits<wchar_t> >(std::basic_istream<wchar_t, std::char_traits<wchar_t> >& is, Address& address);
-template<class charT, class Traits> std::basic_istream<charT, Traits>& Fastcgipp::Http::operator>>(std::basic_istream<charT, Traits>& is, Address& address)
+std::istream& Http::operator>>(std::istream& is, Address& address)
 {
 	using namespace std;
 	if(!is.good()) return is;
@@ -859,17 +811,17 @@ template<class charT, class Traits> std::basic_istream<charT, Traits>& Fastcgipp
 	ios_base::iostate err = ios::goodbit;
 	try
 	{
-		typename basic_istream<charT, Traits>::sentry ipfx(is);
+		istream::sentry ipfx(is);
 		if(ipfx)
 		{
-			istreambuf_iterator<charT, Traits> read(is);
+			istreambuf_iterator<char> read(is);
 			unsigned char buffer[Address::size];
 			unsigned char* write=buffer;
 			unsigned char* pad=0;
 			unsigned char offset;
 			unsigned char count=0;
 			uint16_t chunk=0;
-			charT lastChar=0;
+			char lastChar=0;
 
 			for(;;++read)
 			{
@@ -918,7 +870,7 @@ template<class charT, class Traits> std::basic_istream<charT, Traits>& Fastcgipp
 							break;
 						}
 						unsigned int value;
-						use_facet<num_get<charT, istreambuf_iterator<charT, Traits> > >(is.getloc()).get(++read, istreambuf_iterator<charT, Traits>(), is, err, value);
+						use_facet<num_get<char, istreambuf_iterator<char> > >(is.getloc()).get(++read, istreambuf_iterator<char>(), is, err, value);
 						*write++ = value;
 					}
 					break;
@@ -998,10 +950,19 @@ template<class charT, class Traits> std::basic_istream<charT, Traits>& Fastcgipp
 	return is;
 }
 
-Fastcgipp::Http::Address::operator bool() const
+Http::Address::operator bool() const
 {
 	static const unsigned char nullString[size] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; 
 	if(std::memcmp(m_data, nullString, size) == 0)
 		return false;
 	return true;
 }
+namespace Http {
+std::ostream& operator<< ( std::ostream& os, const Http::SessionId& x ) {
+    base64Encode ( x.data, x.data+SessionId::size, std::ostream_iterator<char> ( os ) );
+    return os;
+}
+}
+
+
+}// namespace Fastcgipp

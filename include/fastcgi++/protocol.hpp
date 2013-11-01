@@ -22,7 +22,6 @@
 #ifndef PROTOCOL_HPP
 #define PROTOCOL_HPP
 
-#include <fastcgi++/config.h>
 #include <map>
 #include <string>
 #include <exception>

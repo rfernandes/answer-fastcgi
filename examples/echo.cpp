@@ -52,11 +52,11 @@ void error_log(const char* msg)
 // Anyway, moving right along, the streams will code convert all the UTF-32 data to UTF-8
 // before it is sent out to the client. This way we get the best of both worlds.
 //
-// So, whenever we are going to use UTF-8, our template parameter for Fastcgipp::Request<charT>
+// So, whenever we are going to use UTF-8, our template parameter for Fastcgipp::Request
 // should be wchar_t. Keep in mind that this suddendly makes
 // everything wide character and utf compatible. Including HTTP header data (cookies, urls, yada-yada).
 
-class Echo: public Fastcgipp::Request<wchar_t>
+class Echo: public Fastcgipp::Request
 {
 	bool response()
 	{

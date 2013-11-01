@@ -19,8 +19,8 @@
 ****************************************************************************/
 
 
-#include <asql/mysql.hpp>
-#include <utf8_codecvt.hpp>
+#include "asql/mysql.hpp"
+#include "utf8_codecvt.hpp"
 #include <cstdlib>
 
 void ASql::MySQL::Connection::connect(const char* host, const char* user, const char* passwd, const char* db, unsigned int port, const char* unix_socket, unsigned long client_flag, const char* const charset)

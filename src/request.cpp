@@ -18,11 +18,9 @@
 * along with fastcgi++.  If not, see <http://www.gnu.org/licenses/>.       *
 ****************************************************************************/
 
-#include <fastcgi++/request.hpp>
+#include "fastcgi++/request.hpp"
 
-template void Fastcgipp::Request<char>::complete();
-template void Fastcgipp::Request<wchar_t>::complete();
-template<class charT> void Fastcgipp::Request<charT>::complete()
+void Fastcgipp::Request::complete()
 {
 	using namespace Protocol;
 	out.flush();
@@ -44,9 +42,7 @@ template<class charT> void Fastcgipp::Request<charT>::complete()
 	transceiver->secureWrite(sizeof(Header)+sizeof(EndRequest), id, killCon);
 }
 
-template bool Fastcgipp::Request<char>::handler();
-template bool Fastcgipp::Request<wchar_t>::handler();
-template<class charT> bool Fastcgipp::Request<charT>::handler()
+bool Fastcgipp::Request::handler()
 {
 	using namespace Protocol;
 	using namespace std;
@@ -165,9 +161,7 @@ template<class charT> bool Fastcgipp::Request<charT>::handler()
 	return false;
 }
 
-template void Fastcgipp::Request<char>::errorHandler(const std::exception& error);
-template void Fastcgipp::Request<wchar_t>::errorHandler(const std::exception& error);
-template<class charT> void Fastcgipp::Request<charT>::errorHandler(const std::exception& error)
+void Fastcgipp::Request::errorHandler(const std::exception& error)
 {
 		out << \
 "Status: 500 Internal Server Error\n"\
@@ -185,9 +179,7 @@ template<class charT> void Fastcgipp::Request<charT>::errorHandler(const std::ex
 		err << '"' << error.what() << '"' << " from \"http://" << environment().host << environment().requestUri << "\" with a " << environment().requestMethod << " request method.";
 }
 
-template void Fastcgipp::Request<char>::bigPostErrorHandler();
-template void Fastcgipp::Request<wchar_t>::bigPostErrorHandler();
-template<class charT> void Fastcgipp::Request<charT>::bigPostErrorHandler()
+void Fastcgipp::Request::bigPostErrorHandler()
 {
 		out << \
 "Status: 413 Request Entity Too Large\n"\

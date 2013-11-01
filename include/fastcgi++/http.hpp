@@ -53,18 +53,17 @@ namespace Fastcgipp
 		 * is omitted from the class so it can be linked in an associative
 		 * container.
 		 *
-		 * @tparam charT Type of character to use in the value string (char or wchar_t)
 		 */
-		template<class charT> struct Post
+		struct Post
 		{
 			//! Type of POST data piece
 			enum Type { file, form } type;
 			//! Value of POST data if type=form
-			std::basic_string<charT> value;
+			std::string value;
 			//! Filename of POST data if type=file
-			std::basic_string<charT>& filename;
+			std::string& filename;
 			//! Content Type if type=file
-			std::basic_string<charT> contentType;
+			std::string contentType;
 
 			//! Pointer to file data
 			const char* data() const { return m_data; }
@@ -88,7 +87,7 @@ namespace Fastcgipp
 			mutable char* m_data;
 			//! Size of data in bytes pointed to by data.
 			mutable size_t m_size;
-			template<class T> friend class Environment;
+			friend class Environment;
 		};
 
 		//! The HTTP request method as an enumeration
@@ -105,7 +104,7 @@ namespace Fastcgipp
 			HTTP_METHOD_CONNECT
 		};
 		extern const char* requestMethodLabels[];
-		template<class charT, class Traits> inline std::basic_ostream<charT, Traits>& operator<<(std::basic_ostream<charT, Traits>& os, const RequestMethod requestMethod) { return os << requestMethodLabels[requestMethod]; }
+		inline std::ostream& operator<<(std::ostream& os, const RequestMethod requestMethod) { return os << requestMethodLabels[requestMethod]; }
 	
 		//! Efficiently stores IPv6 addresses
 		/*!
@@ -183,48 +182,47 @@ namespace Fastcgipp
 		 * This stream inserter obeys all stream manipulators regarding
 		 * alignment, field width and numerical base.
 		 */
-		template<class charT, class Traits> std::basic_ostream<charT, Traits>& operator<<(std::basic_ostream<charT, Traits>& os, const Address& address);
+		std::ostream& operator<<( std::ostream& os, const Address& address );
 		//! Address stream extractor operation
 		/*!
 		 * In order for this to work the string must represent either an IPv4
 		 * address in standard textual decimal form (127.0.0.1) or an IPv6 in
 		 * standard form.
 		 */
-		template<class charT, class Traits> std::basic_istream<charT, Traits>& operator>>(std::basic_istream<charT, Traits>& is, Address& address);
+		std::istream& operator>>(std::istream& is, Address& address);
 
 		//! Data structure of HTTP environment data
 		/*!
 		 * This structure contains all HTTP environment data for each individual request. The data is processed
 		 * from FastCGI parameter records.
 		 *
-		 * @tparam charT Character type to use for strings
 		 */
-		template<class charT> struct Environment
+		struct Environment
 		{
 			//! Hostname of the server
-			std::basic_string<charT> host;
+			std::string host;
 			//! User agent string
-			std::basic_string<charT> userAgent;
+			std::string userAgent;
 			//! Content types the client accepts
-			std::basic_string<charT> acceptContentTypes;
+			std::string acceptContentTypes;
 			//! Languages the client accepts
-			std::basic_string<charT> acceptLanguages;
+			std::string acceptLanguages;
 			//! Character sets the clients accepts
-			std::basic_string<charT> acceptCharsets;
+			std::string acceptCharsets;
 			//! Referral URL
-			std::basic_string<charT> referer;
+			std::string referer;
 			//! Content type of data sent from client
-			std::basic_string<charT> contentType;
+			std::string contentType;
 			//! HTTP root directory
-			std::basic_string<charT> root;
+			std::string root;
 			//! Filename of script relative to the HTTP root directory
-			std::basic_string<charT> scriptName;
+			std::string scriptName;
 			//! REQUEST_METHOD
 			RequestMethod requestMethod;
 			//! REQUEST_URI
-			std::basic_string<charT> requestUri;
+			std::string requestUri;
 			//! Path Information
-			typedef std::vector<std::basic_string<charT> > PathInfo;
+			typedef std::vector<std::string > PathInfo;
 			PathInfo pathInfo;
 			//! The etag the client assumes this document should have
 			int etag;
@@ -243,13 +241,13 @@ namespace Fastcgipp
 			//! Timestamp the client has for this document
 			boost::posix_time::ptime ifModifiedSince;
 
-			typedef std::map<std::basic_string<charT>, std::basic_string<charT> > Cookies;
+			typedef std::map<std::string, std::string > Cookies;
 			//! Container with all url-encoded cookie data
 			Cookies cookies;
 			//! Quick and easy way to find a cookie value
-			const std::basic_string<charT>& findCookie(const charT* key) const;
+			const std::string& findCookie(const char* key) const;
 
-			typedef std::map<std::basic_string<charT>, std::basic_string<charT> > Gets;
+			typedef std::map<std::string, std::string > Gets;
 			//! Container with all url-encoded GET data
 			Gets gets;
 
@@ -259,16 +257,16 @@ namespace Fastcgipp
 			 * \return Constant reference to the string representation of the GET value. If the
 			 * GET value does not exist this will return an empty string;
 			 */
-			const std::basic_string<charT>& findGet(const charT* key) const;
+			const std::string& findGet(const char* key) const;
 
 			//! Quick and easy way to check if a GET value exists.
 			/*!
 			 * \param[in] key C-string representation of the name of the GET value you want
 			 * \return True if the value was passed from the client, false otherwise.
 			 */
-			bool checkForGet(const charT* key) const;
+			bool checkForGet(const char* key) const;
 
-			typedef std::map<std::basic_string<charT>, Post<charT> > Posts;
+			typedef std::map<std::string, Post > Posts;
 			//! STL container associating Post objects with their name
 			Posts posts;
 
@@ -278,14 +276,14 @@ namespace Fastcgipp
 			 * \return Constant reference to the Post object created for the POST value. If the
 			 * POST value does not exist this will return a default constructed Post object.
 			 */
-			const Post<charT>& findPost(const charT* key) const;
+			const Post& findPost(const char* key) const;
 
 			//! Quick and easy way to check if a POST value exists.
 			/*!
 			 * \param[in] key C-string representation of the name of the POST value you want
 			 * \return True if the value was passed from the client, false otherwise.
 			 */
-			bool checkForPost(const charT* key) const;
+			bool checkForPost(const char* key) const;
 
 			//! Parses FastCGI parameter data into the data structure
 			/*!
@@ -372,7 +370,7 @@ namespace Fastcgipp
 		 *
 		 * @return Returns false if the name isn't found. True otherwise.
 		 */
-		template<class charT> void decodeUrlEncoded(const char* data, size_t size, std::map<std::basic_string<charT>, std::basic_string<charT> >& output, const char fieldSeperator='&');
+		void decodeUrlEncoded(const char* data, size_t size, std::map<std::string, std::string >& output, const char fieldSeperator='&');
 
 		//! Convert a string with percent escaped byte values to their actual values
 		/*!
@@ -467,7 +465,7 @@ namespace Fastcgipp
 			 * 
 			 * @param data_ Iterator set at begin of base64 encoded string
 			 */
-			template<class charT> const SessionId& operator=(charT* data_);
+			const SessionId& operator=(char* data_);
 
 			/** 
 			 * @brief Initialize the ID data with a base64 encoded string
@@ -476,9 +474,9 @@ namespace Fastcgipp
 			 * 
 			 * @param data_ 
 			 */
-			template<class charT> SessionId(charT* data_) { *this=data_; }
+			SessionId(char* data_) { *this=data_; }
 
-			template<class charT, class Traits> friend std::basic_ostream<charT, Traits>& operator<<(std::basic_ostream<charT, Traits>& os, const SessionId& x);
+			friend std::ostream& operator<<(std::ostream& os, const SessionId& x);
 
 			bool operator<(const SessionId& x) const { return std::memcmp(data, x.data, SessionId::size)<0; }
 			bool operator==(const SessionId& x) const { return std::memcmp(data, x.data, SessionId::size)==0; }
@@ -494,7 +492,7 @@ namespace Fastcgipp
 		/** 
 		 * @brief Output the ID data in base64 encoding
 		 */
-		template<class charT, class Traits> std::basic_ostream<charT, Traits>& operator<<(std::basic_ostream<charT, Traits>& os, const SessionId& x) { base64Encode(x.data, x.data+SessionId::size, std::ostream_iterator<charT, charT, Traits>(os)); return os; }
+		std::ostream& operator<<(std::ostream& os, const SessionId& x);
 
 		/** 
 		 * @brief Container for HTTP sessions

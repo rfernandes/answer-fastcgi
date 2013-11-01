@@ -1,4 +1,4 @@
-#include <fastcgi++/manager.hpp>
+#include "fastcgi++/manager.hpp"
 
 
 Fastcgipp::ManagerPar* Fastcgipp::ManagerPar::instance=0;

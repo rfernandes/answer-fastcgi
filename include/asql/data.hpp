@@ -114,7 +114,7 @@ namespace ASql
 		};
 
 		//! A basic, practically none-functional stream inserter for Nullable objects.
-		template<class charT, class Traits, class T> inline std::basic_ostream<charT, Traits>& operator<<(std::basic_ostream<charT, Traits>& os, const Nullable<T>& x)
+		template<class T> inline std::string& operator<<(std::string& os, const Nullable<T>& x)
 		{
 			if(x.nullness)
 				os << "NULL";

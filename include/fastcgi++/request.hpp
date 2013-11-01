@@ -56,9 +56,8 @@ namespace Fastcgipp
 	 * a 8bit character set encoding pass char as the template argument and
 	 * setloc() a locale with the corresponding character set.
 	 *
-	 * \tparam charT Character type for internal processing (wchar_t or char)
 	 */
-	template<class charT> class Request
+	class Request
 	{
 	public:
 		//! Initializes what it can. set() must be called by Manager before the data is usable.
@@ -70,7 +69,7 @@ namespace Fastcgipp
 		Request(const size_t maxPostSize=0): m_maxPostSize(maxPostSize), state(Protocol::PARAMS)  { setloc(std::locale::classic()); out.exceptions(std::ios_base::badbit | std::ios_base::failbit | std::ios_base::eofbit); m_environment.clearPostBuffer(); }
 
 		//! Accessor for  the data structure containing all HTTP environment data
-		const Http::Environment<charT>& environment() const { return m_environment; }
+		const Http::Environment& environment() const { return m_environment; }
 
 		// To dump data into the stream without it being code converted and bypassing the stream buffer call Fcgistream::dump(char* data, size_t size)
 		// or Fcgistream::dump(std::basic_istream<char>& stream)
@@ -79,13 +78,13 @@ namespace Fastcgipp
 		/*!
 		 * To dump data directly through the stream without it being code converted and bypassing the stream buffer call Fcgistream::dump()
 		 */
-		Fcgistream<charT> out;
+		Fcgistream out;
 
 		//! Output stream to the HTTP server error log
 		/*!
 		 * To dump data directly through the stream without it being code converted and bypassing the stream buffer call Fcgistream::dump()
 		 */
-		Fcgistream<charT> err;
+		Fcgistream err;
 
 		//! Called when an exception is caught.
 		/*!
@@ -199,7 +198,7 @@ namespace Fastcgipp
 		boost::function<void(Message)> m_callback;
 
 		//! The data structure containing all HTTP environment data
-		Http::Environment<charT> m_environment;
+		Http::Environment m_environment;
 
 		//! Queue type for pending messages
 		/*!
