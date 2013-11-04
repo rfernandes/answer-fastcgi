@@ -100,11 +100,11 @@ class Echo: public Fastcgipp::Request
 		out << "<h1>Path Data</h1>";
 		if(environment().pathInfo.size())
 		{
-			std::wstring preTab;
-			for(Http::Environment<wchar_t>::PathInfo::const_iterator it=environment().pathInfo.begin(); it!=environment().pathInfo.end(); ++it)
+			std::string preTab;
+			for(Http::Environment::PathInfo::const_iterator it=environment().pathInfo.begin(); it!=environment().pathInfo.end(); ++it)
 			{
 				out << preTab << encoding(HTML) << *it << encoding(NONE) << "<br />";
-				preTab += L"&nbsp;&nbsp;&nbsp;";
+				preTab += "&nbsp;&nbsp;&nbsp;";
 			}
 		}
 		else
@@ -113,7 +113,7 @@ class Echo: public Fastcgipp::Request
 		// Let's see the GET data
 		out << "<h1>GET Data</h1>";
 		if(environment().gets.size())
-			for(Http::Environment<wchar_t>::Gets::const_iterator it=environment().gets.begin(); it!=environment().gets.end(); ++it)
+			for(Http::Environment::Gets::const_iterator it=environment().gets.begin(); it!=environment().gets.end(); ++it)
 				out << "<b>" << encoding(HTML) << it->first << encoding(NONE) << ":</b> " << encoding(HTML) << it->second << encoding(NONE) << "<br />";
 		else
 			out << "<p>No GET data</p>";
@@ -121,7 +121,7 @@ class Echo: public Fastcgipp::Request
 		// Let's see the cookie data
 		out << "<h1>Cookie Data</h1>";
 		if(environment().cookies.size())
-			for(Http::Environment<wchar_t>::Cookies::const_iterator it=environment().cookies.begin(); it!=environment().cookies.end(); ++it)
+			for(Http::Environment::Cookies::const_iterator it=environment().cookies.begin(); it!=environment().cookies.end(); ++it)
 				out << "<b>" << encoding(HTML) << it->first << encoding(NONE) << ":</b> " << encoding(HTML) << it->second << encoding(NONE) << "<br />";
 		else
 			out << "<p>No Cookie data</p>";
@@ -130,10 +130,10 @@ class Echo: public Fastcgipp::Request
 		out << "<h1>POST Data</h1>";
 		if(environment().posts.size())
 		{
-			for(Http::Environment<wchar_t>::Posts::const_iterator it=environment().posts.begin(); it!=environment().posts.end(); ++it)
+			for(Http::Environment::Posts::const_iterator it=environment().posts.begin(); it!=environment().posts.end(); ++it)
 			{
 				out << "<h2>" << encoding(HTML) << it->first << encoding(NONE) << "</h2>";
-				if(it->second.type==Http::Post<wchar_t>::form)
+				if(it->second.type==Http::Post::form)
 				{
 					out << "<p><b>Type:</b> form data<br />";
 					out << "<b>Value:</b> " << encoding(HTML) << it->second.value << encoding(NONE) << "</p>";

@@ -44,10 +44,7 @@ void error_log(const char* msg)
 // 1) Be derived from Fastcgipp::Request
 // 2) Define the virtual response() member function from Fastcgipp::Request()
 
-// First things first let's decide on what kind of character set we will use. Let's just
-// use good old ISO-8859-1 this time. No wide characters
-
-class Session: public Fastcgipp::Request<char>
+class Session: public Fastcgipp::Request
 {
 	typedef Fastcgipp::Http::Sessions<int> Sessions;
 	bool response()
