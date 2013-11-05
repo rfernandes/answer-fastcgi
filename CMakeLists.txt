@@ -5,6 +5,7 @@ include_directories(BEFORE ./include)
 add_definitions(
 -DHAVE_ENDIAN_H
 -DPACKAGE_VERSION="2.1"
+-std=c++11
 )
 
 find_package(Boost COMPONENTS system thread)

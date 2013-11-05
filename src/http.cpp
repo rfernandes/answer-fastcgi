@@ -357,8 +357,8 @@ void Http::Environment::parsePostsMultipart()
 					{
 						string name;
 						charToString(nameStart, nameSize, name);
-
-						Post& thePost=posts[name];
+		
+						Post thePost;
 						if(contentTypeSize != -1)
 						{
 							thePost.type=Post::file;
@@ -376,6 +376,7 @@ void Http::Environment::parsePostsMultipart()
 							thePost.type=Post::form;
 							charToString(bodyStart, bodySize, thePost.value);
 						}
+						posts.emplace_back(name, thePost);
 					}
 
 					pPostBuffer+=size;
@@ -416,10 +417,11 @@ void Http::Environment::parsePostsUrlEncoded()
 			std::string name;
 			charToString(nameStart, nameSize, name);
 			nameStart=i+1;
-			Post& thePost=posts[name];
+			Post thePost;
 			thePost.type=Post::form;
 			charToString(valueStart, valueSize, thePost.value);
 			valueStart=0;
+			posts.emplace_back(name, thePost);
 		}
 	}
 }
@@ -447,7 +449,7 @@ const Http::SessionId& Http::SessionId::operator=(char* data_)
 	return *this;
 }
 
-void Http::decodeUrlEncoded(const char* data, size_t size, std::map<std::string, std::string >& output, const char fieldSeperator)
+void Http::decodeUrlEncoded( const char* data, size_t size, std::vector< std::pair< std::string, std::string > >& output, const char fieldSeperator )
 {
 	using namespace std;
 
@@ -469,8 +471,9 @@ void Http::decodeUrlEncoded(const char* data, size_t size, std::map<std::string,
 				string name;
 				charToString(nameStart, nameSize, name);
 				nameStart=i+1;
-				string& value=output[name];
+				string value;
 				charToString(valueStart, valueSize, value);
+				output.emplace_back(name, value);
 				valueStart=0;
 			}
 		}
@@ -502,7 +505,8 @@ const char* Http::requestMethodLabels[]= {
 const std::string& Http::Environment::findCookie(const char* key) const
 {
 	static const std::string emptyString;
-	Cookies::const_iterator it=cookies.find(key);
+  Cookies::const_iterator it=std::find_if(cookies.begin(), cookies.end(),
+    [&](const std::pair<std::string, std::string>& v){ return v.first == key; });
 	if(it==cookies.end())
 		return emptyString;
 	else
@@ -512,7 +516,8 @@ const std::string& Http::Environment::findCookie(const char* key) const
 const std::string& Http::Environment::findGet(const char* key) const
 {
 	static const std::string emptyString;
-	Gets::const_iterator it=gets.find(key);
+  Gets::const_iterator it=std::find_if(gets.begin(), gets.end(),
+    [&](const std::pair<std::string, std::string>& v){ return v.first == key; });
 	if(it==gets.end())
 		return emptyString;
 	else
@@ -522,7 +527,8 @@ const std::string& Http::Environment::findGet(const char* key) const
 const Http::Post& Http::Environment::findPost(const char* key) const
 {
 	static const Post emptyPost;
-	Posts::const_iterator it=posts.find(key);
+  Posts::const_iterator it=std::find_if(posts.begin(), posts.end(),
+    [&](const std::pair<std::string, Post>& v){ return v.first == key; });
 	if(it==posts.end())
 		return emptyPost;
 	else
@@ -531,7 +537,8 @@ const Http::Post& Http::Environment::findPost(const char* key) const
 
 bool Http::Environment::checkForGet(const char* key) const
 {
-	Gets::const_iterator it=gets.find(key);
+  Gets::const_iterator it=std::find_if(gets.begin(), gets.end(),
+    [&](const std::pair<std::string, std::string>& v){ return v.first == key; });
 	if(it==gets.end())
 		return false;
 	else
@@ -540,7 +547,8 @@ bool Http::Environment::checkForGet(const char* key) const
 
 bool Http::Environment::checkForPost(const char* key) const
 {
-	Posts::const_iterator it=posts.find(key);
+  Posts::const_iterator it=std::find_if(posts.begin(), posts.end(),
+    [&](const std::pair<std::string, Post>& v){ return v.first == key; });
 	if(it==posts.end())
 		return false;
 	else

@@ -241,13 +241,13 @@ namespace Fastcgipp
 			//! Timestamp the client has for this document
 			boost::posix_time::ptime ifModifiedSince;
 
-			typedef std::map<std::string, std::string > Cookies;
+			typedef std::vector<std::pair<std::string, std::string > > Cookies;
 			//! Container with all url-encoded cookie data
 			Cookies cookies;
 			//! Quick and easy way to find a cookie value
 			const std::string& findCookie(const char* key) const;
 
-			typedef std::map<std::string, std::string > Gets;
+			typedef std::vector<std::pair<std::string, std::string > > Gets;
 			//! Container with all url-encoded GET data
 			Gets gets;
 
@@ -266,7 +266,7 @@ namespace Fastcgipp
 			 */
 			bool checkForGet(const char* key) const;
 
-			typedef std::map<std::string, Post > Posts;
+			typedef std::vector<std::pair<std::string, Post > > Posts;
 			//! STL container associating Post objects with their name
 			Posts posts;
 
@@ -370,7 +370,7 @@ namespace Fastcgipp
 		 *
 		 * @return Returns false if the name isn't found. True otherwise.
 		 */
-		void decodeUrlEncoded(const char* data, size_t size, std::map<std::string, std::string >& output, const char fieldSeperator='&');
+		void decodeUrlEncoded(const char* data, size_t size, std::vector<std::pair<std::string, std::string > >& output, const char fieldSeperator='&');
 
 		//! Convert a string with percent escaped byte values to their actual values
 		/*!
