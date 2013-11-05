@@ -18,6 +18,8 @@
 * along with fastcgi++.  If not, see <http://www.gnu.org/licenses/>.       *
 ****************************************************************************/
 
+using namespace std;
+
 #include "fastcgi++/request.hpp"
 
 void Fastcgipp::Request::complete()
@@ -152,7 +154,7 @@ bool Fastcgipp::Request::handler()
 			return true;
 		}
 	}
-	catch(const std::exception& e)
+	catch(const exception& e)
 	{
 		errorHandler(e);
 		complete();
@@ -161,7 +163,7 @@ bool Fastcgipp::Request::handler()
 	return false;
 }
 
-void Fastcgipp::Request::errorHandler(const std::exception& error)
+void Fastcgipp::Request::errorHandler(const exception& error)
 {
 		out << \
 "Status: 500 Internal Server Error\n"\

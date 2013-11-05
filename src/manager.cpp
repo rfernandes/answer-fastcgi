@@ -1,6 +1,5 @@
 #include "fastcgi++/manager.hpp"
 
-
 Fastcgipp::ManagerPar* Fastcgipp::ManagerPar::instance=0;
 
 Fastcgipp::ManagerPar::ManagerPar(int fd, const boost::function<void(Protocol::FullId, Message)>& sendMessage_, bool doSetupSignals): transceiver(fd, sendMessage_), asleep(false), stopBool(false), terminateBool(false)

@@ -24,6 +24,8 @@
 #include "fastcgi++/http.hpp"
 #include "fastcgi++/protocol.hpp"
 
+using namespace std;
+
 namespace Fastcgipp
 {
 
@@ -110,7 +112,7 @@ void Http::Environment::fill(const char* data, size_t size)
 						if(size > 0)
 						{
 							percentEscapedToRealBytes(source-size, buffer.get(), size);
-							pathInfo.push_back(std::string());
+							pathInfo.push_back(string());
 							charToString(buffer.get(), size, pathInfo.back());
 						}
 						size=-1;						
@@ -232,7 +234,7 @@ bool Http::Environment::fillPostBuffer(const char* data, size_t size)
 	size_t trueSize=minPostBufferSize(size);
 	if(trueSize)
 	{
-		std::memcpy(pPostBuffer, data, trueSize);
+		memcpy(pPostBuffer, data, trueSize);
 		pPostBuffer+=trueSize;
 		return true;
 	}
@@ -414,7 +416,7 @@ void Http::Environment::parsePostsUrlEncoded()
 		{
 			valueSize=percentEscapedToRealBytes(valueStart, valueStart, i-valueStart);
 
-			std::string name;
+			string name;
 			charToString(nameStart, nameSize, name);
 			nameStart=i+1;
 			Post thePost;
@@ -432,7 +434,7 @@ Http::SessionId::SessionId()
 {
 	if(!seeded)
 	{
-		std::srand(boost::posix_time::microsec_clock::universal_time().time_of_day().fractional_seconds());
+		srand(boost::posix_time::microsec_clock::universal_time().time_of_day().fractional_seconds());
 		seeded=true;
 	}
 
@@ -443,13 +445,13 @@ Http::SessionId::SessionId()
 
 const Http::SessionId& Http::SessionId::operator=(char* data_)
 {
-	std::memset(data, 0, size);
+	memset(data, 0, size);
 	base64Decode(data_, data_+size*4/3, data);
 	timestamp = boost::posix_time::second_clock::universal_time();
 	return *this;
 }
 
-void Http::decodeUrlEncoded( const char* data, size_t size, std::vector< std::pair< std::string, std::string > >& output, const char fieldSeperator )
+void Http::decodeUrlEncoded( const char* data, size_t size, vector< pair< string, string > >& output, const char fieldSeperator )
 {
 	using namespace std;
 
@@ -502,22 +504,22 @@ const char* Http::requestMethodLabels[]= {
 	"CONNECT"
 };
 
-const std::string& Http::Environment::findCookie(const char* key) const
+const string& Http::Environment::findCookie(const char* key) const
 {
-	static const std::string emptyString;
-  Cookies::const_iterator it=std::find_if(cookies.begin(), cookies.end(),
-    [&](const std::pair<std::string, std::string>& v){ return v.first == key; });
+	static const string emptyString;
+  Cookies::const_iterator it=find_if(cookies.begin(), cookies.end(),
+    [&](const pair<string, string>& v){ return v.first == key; });
 	if(it==cookies.end())
 		return emptyString;
 	else
 		return it->second;
 }
 
-const std::string& Http::Environment::findGet(const char* key) const
+const string& Http::Environment::findGet(const char* key) const
 {
-	static const std::string emptyString;
-  Gets::const_iterator it=std::find_if(gets.begin(), gets.end(),
-    [&](const std::pair<std::string, std::string>& v){ return v.first == key; });
+	static const string emptyString;
+  Gets::const_iterator it=find_if(gets.begin(), gets.end(),
+    [&](const pair<string, string>& v){ return v.first == key; });
 	if(it==gets.end())
 		return emptyString;
 	else
@@ -527,8 +529,8 @@ const std::string& Http::Environment::findGet(const char* key) const
 const Http::Post& Http::Environment::findPost(const char* key) const
 {
 	static const Post emptyPost;
-  Posts::const_iterator it=std::find_if(posts.begin(), posts.end(),
-    [&](const std::pair<std::string, Post>& v){ return v.first == key; });
+  Posts::const_iterator it=find_if(posts.begin(), posts.end(),
+    [&](const pair<string, Post>& v){ return v.first == key; });
 	if(it==posts.end())
 		return emptyPost;
 	else
@@ -537,8 +539,8 @@ const Http::Post& Http::Environment::findPost(const char* key) const
 
 bool Http::Environment::checkForGet(const char* key) const
 {
-  Gets::const_iterator it=std::find_if(gets.begin(), gets.end(),
-    [&](const std::pair<std::string, std::string>& v){ return v.first == key; });
+  Gets::const_iterator it=find_if(gets.begin(), gets.end(),
+    [&](const pair<string, string>& v){ return v.first == key; });
 	if(it==gets.end())
 		return false;
 	else
@@ -547,8 +549,8 @@ bool Http::Environment::checkForGet(const char* key) const
 
 bool Http::Environment::checkForPost(const char* key) const
 {
-  Posts::const_iterator it=std::find_if(posts.begin(), posts.end(),
-    [&](const std::pair<std::string, Post>& v){ return v.first == key; });
+  Posts::const_iterator it=find_if(posts.begin(), posts.end(),
+    [&](const pair<string, Post>& v){ return v.first == key; });
 	if(it==posts.end())
 		return false;
 	else
@@ -662,21 +664,21 @@ void Http::Address::assign(const char* start, const char* end)
 	}
 
 	if(error)
-		std::memset(m_data, 0, size);
+		memset(m_data, 0, size);
 	else if(pad)
 	{
 		if(pad==write)
-			std::memset(write, 0, size-(write-m_data));
+			memset(write, 0, size-(write-m_data));
 		else
 		{
 			const size_t padSize=m_data+size-write;
-			std::memmove(pad+padSize, pad, write-pad);
-			std::memset(pad, 0, padSize);
+			memmove(pad+padSize, pad, write-pad);
+			memset(pad, 0, padSize);
 		}
 	}
 }
 
-std::ostream& Http::operator<<(std::ostream& os, const Address& address)
+ostream& Http::operator<<(ostream& os, const Address& address)
 {
 	using namespace std;
 	if(!os.good()) return os;
@@ -811,7 +813,7 @@ std::ostream& Http::operator<<(std::ostream& os, const Address& address)
 	return os;
 }
 
-std::istream& Http::operator>>(std::istream& is, Address& address)
+istream& Http::operator>>(istream& is, Address& address)
 {
 	using namespace std;
 	if(!is.good()) return is;
@@ -924,12 +926,12 @@ std::istream& Http::operator>>(std::istream& is, Address& address)
 				if(pad)
 				{
 					if(pad==write)
-						std::memset(write, 0, Address::size-(write-buffer));
+						memset(write, 0, Address::size-(write-buffer));
 					else
 					{
 						const size_t padSize=buffer+Address::size-write;
-						std::memmove(pad+padSize, pad, write-pad);
-						std::memset(pad, 0, padSize);
+						memmove(pad+padSize, pad, write-pad);
+						memset(pad, 0, padSize);
 					}
 				}
 				address=buffer;
@@ -961,13 +963,13 @@ std::istream& Http::operator>>(std::istream& is, Address& address)
 Http::Address::operator bool() const
 {
 	static const unsigned char nullString[size] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; 
-	if(std::memcmp(m_data, nullString, size) == 0)
+	if(memcmp(m_data, nullString, size) == 0)
 		return false;
 	return true;
 }
 namespace Http {
-std::ostream& operator<< ( std::ostream& os, const Http::SessionId& x ) {
-    base64Encode ( x.data, x.data+SessionId::size, std::ostream_iterator<char> ( os ) );
+ostream& operator<< ( ostream& os, const Http::SessionId& x ) {
+    base64Encode ( x.data, x.data+SessionId::size, ostream_iterator<char> ( os ) );
     return os;
 }
 }

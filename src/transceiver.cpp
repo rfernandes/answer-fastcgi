@@ -18,8 +18,9 @@
 * along with fastcgi++.  If not, see <http://www.gnu.org/licenses/>.       *
 ****************************************************************************/
 
-
 #include "fastcgi++/transceiver.hpp"
+
+using namespace std;
 
 int Fastcgipp::Transceiver::transmit()
 {
@@ -76,7 +77,7 @@ bool Fastcgipp::Transceiver::handler()
 	}
 	if(retVal<0) throw Exceptions::SocketPoll(errno);
 	
-	std::vector<pollfd>::iterator pollFd = find_if(pollFds.begin(), pollFds.end(), reventsZero);
+	vector<pollfd>::iterator pollFd = find_if(pollFds.begin(), pollFds.end(), reventsZero);
 
 	if(pollFd->revents & (POLLHUP|POLLERR|POLLNVAL) )
 	{
@@ -313,9 +314,9 @@ Fastcgipp::Exceptions::SocketPoll::SocketPoll(int erno_): CodedException(0, erno
 	}
 }
 
-void Fastcgipp::Transceiver::freeFd(int fd, std::vector<pollfd>& pollFds, std::map<int, fdBuffer>& fdBuffers)
+void Fastcgipp::Transceiver::freeFd(int fd, vector<pollfd>& pollFds, map<int, fdBuffer>& fdBuffers)
 {
-	std::vector<pollfd>::iterator it=std::find_if(pollFds.begin(), pollFds.end(), equalsFd(fd));
+	vector<pollfd>::iterator it=find_if(pollFds.begin(), pollFds.end(), equalsFd(fd));
 	if(it != pollFds.end())
 	{
 		pollFds.erase(it);

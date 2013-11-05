@@ -5,107 +5,108 @@
 #include <boost/iostreams/code_converter.hpp>
 
 #include "fastcgi++/fcgistream.hpp"
-#include "utf8_codecvt.hpp"
 
-template<typename Sink> std::streamsize Fastcgipp::Fcgistream::Encoder::write(Sink& dest, const char* s, std::streamsize n)
+using namespace std;
+
+template<typename Sink> streamsize Fastcgipp::Fcgistream::Encoder::write(Sink& dest, const char* s, streamsize n)
 {
-	static std::map<char, std::string > htmlCharacters;
+	static map<char, string > htmlCharacters;
 	if(!htmlCharacters.size())
 	{
 		const char quot[]="&quot;";
-		std::copy(quot, quot+sizeof(quot)-1, std::back_inserter(htmlCharacters['"']));
+		copy(quot, quot+sizeof(quot)-1, back_inserter(htmlCharacters['"']));
 
 		const char gt[]="&gt;";
-		std::copy(gt, gt+sizeof(gt)-1, std::back_inserter(htmlCharacters['>']));
+		copy(gt, gt+sizeof(gt)-1, back_inserter(htmlCharacters['>']));
 
 		const char lt[]="&lt;";
-		std::copy(lt, lt+sizeof(lt)-1, std::back_inserter(htmlCharacters['<']));
+		copy(lt, lt+sizeof(lt)-1, back_inserter(htmlCharacters['<']));
 
 		const char amp[]="&amp;";
-		std::copy(amp, amp+sizeof(amp)-1, std::back_inserter(htmlCharacters['&']));
+		copy(amp, amp+sizeof(amp)-1, back_inserter(htmlCharacters['&']));
 
 		const char apos[]="&apos;";
-		std::copy(apos, apos+sizeof(apos)-1, std::back_inserter(htmlCharacters['\'']));
+		copy(apos, apos+sizeof(apos)-1, back_inserter(htmlCharacters['\'']));
 	}
 
-	static std::map<char, std::string > urlCharacters;
+	static map<char, string > urlCharacters;
 	if(!urlCharacters.size())
 	{
 		const char exclaim[]="%21";
-		std::copy(exclaim, exclaim+sizeof(exclaim)-1, std::back_inserter(urlCharacters['!']));
+		copy(exclaim, exclaim+sizeof(exclaim)-1, back_inserter(urlCharacters['!']));
 
 		const char rightbrac[]="%5D";
-		std::copy(rightbrac, rightbrac+sizeof(rightbrac)-1, std::back_inserter(urlCharacters[']']));
+		copy(rightbrac, rightbrac+sizeof(rightbrac)-1, back_inserter(urlCharacters[']']));
 
 		const char leftbrac[]="%5B";
-		std::copy(leftbrac, leftbrac+sizeof(leftbrac)-1, std::back_inserter(urlCharacters['[']));
+		copy(leftbrac, leftbrac+sizeof(leftbrac)-1, back_inserter(urlCharacters['[']));
 
 		const char number[]="%23";
-		std::copy(number, number+sizeof(number)-1, std::back_inserter(urlCharacters['#']));
+		copy(number, number+sizeof(number)-1, back_inserter(urlCharacters['#']));
 
 		const char question[]="%3F";
-		std::copy(question, question+sizeof(question)-1, std::back_inserter(urlCharacters['?']));
+		copy(question, question+sizeof(question)-1, back_inserter(urlCharacters['?']));
 
 		const char slash[]="%2F";
-		std::copy(slash, slash+sizeof(slash)-1, std::back_inserter(urlCharacters['/']));
+		copy(slash, slash+sizeof(slash)-1, back_inserter(urlCharacters['/']));
 
 		const char comma[]="%2C";
-		std::copy(comma, comma+sizeof(comma)-1, std::back_inserter(urlCharacters[',']));
+		copy(comma, comma+sizeof(comma)-1, back_inserter(urlCharacters[',']));
 
 		const char money[]="%24";
-		std::copy(money, money+sizeof(money)-1, std::back_inserter(urlCharacters['$']));
+		copy(money, money+sizeof(money)-1, back_inserter(urlCharacters['$']));
 
 		const char plus[]="%2B";
-		std::copy(plus, plus+sizeof(plus)-1, std::back_inserter(urlCharacters['+']));
+		copy(plus, plus+sizeof(plus)-1, back_inserter(urlCharacters['+']));
 
 		const char equal[]="%3D";
-		std::copy(equal, equal+sizeof(equal)-1, std::back_inserter(urlCharacters['=']));
+		copy(equal, equal+sizeof(equal)-1, back_inserter(urlCharacters['=']));
 
 		const char andsym[]="%26";
-		std::copy(andsym, andsym+sizeof(andsym)-1, std::back_inserter(urlCharacters['&']));
+		copy(andsym, andsym+sizeof(andsym)-1, back_inserter(urlCharacters['&']));
 
 		const char at[]="%40";
-		std::copy(at, at+sizeof(at)-1, std::back_inserter(urlCharacters['@']));
+		copy(at, at+sizeof(at)-1, back_inserter(urlCharacters['@']));
 
 		const char colon[]="%3A";
-		std::copy(colon, colon+sizeof(colon)-1, std::back_inserter(urlCharacters[':']));
+		copy(colon, colon+sizeof(colon)-1, back_inserter(urlCharacters[':']));
 
 		const char semi[]="%3B";
-		std::copy(semi, semi+sizeof(semi)-1, std::back_inserter(urlCharacters[';']));
+		copy(semi, semi+sizeof(semi)-1, back_inserter(urlCharacters[';']));
 
 		const char rightpar[]="%29";
-		std::copy(rightpar, rightpar+sizeof(rightpar)-1, std::back_inserter(urlCharacters[')']));
+		copy(rightpar, rightpar+sizeof(rightpar)-1, back_inserter(urlCharacters[')']));
 
 		const char leftpar[]="%28";
-		std::copy(leftpar, leftpar+sizeof(leftpar)-1, std::back_inserter(urlCharacters['(']));
+		copy(leftpar, leftpar+sizeof(leftpar)-1, back_inserter(urlCharacters['(']));
 
 		const char apos[]="%27";
-		std::copy(apos, apos+sizeof(apos)-1, std::back_inserter(urlCharacters['\'']));
+		copy(apos, apos+sizeof(apos)-1, back_inserter(urlCharacters['\'']));
 
 		const char star[]="%2A";
-		std::copy(star, star+sizeof(star)-1, std::back_inserter(urlCharacters['*']));
+		copy(star, star+sizeof(star)-1, back_inserter(urlCharacters['*']));
 
 		const char lt[]="%3C";
-		std::copy(lt, lt+sizeof(lt)-1, std::back_inserter(urlCharacters['<']));
+		copy(lt, lt+sizeof(lt)-1, back_inserter(urlCharacters['<']));
 
 		const char gt[]="%3E";
-		std::copy(gt, gt+sizeof(gt)-1, std::back_inserter(urlCharacters['>']));
+		copy(gt, gt+sizeof(gt)-1, back_inserter(urlCharacters['>']));
 
 		const char quot[]="%22";
-		std::copy(quot, quot+sizeof(quot)-1, std::back_inserter(urlCharacters['"']));
+		copy(quot, quot+sizeof(quot)-1, back_inserter(urlCharacters['"']));
 
 		const char space[]="%20";
-		std::copy(space, space+sizeof(space)-1, std::back_inserter(urlCharacters[' ']));
+		copy(space, space+sizeof(space)-1, back_inserter(urlCharacters[' ']));
 
 		const char percent[]="%25";
-		std::copy(percent, percent+sizeof(percent)-1, std::back_inserter(urlCharacters['%']));
+		copy(percent, percent+sizeof(percent)-1, back_inserter(urlCharacters['%']));
 	}
 
 	if(m_state==NONE)
 		boost::iostreams::write(dest, s, n);
 	else
 	{
-		std::map<char, std::string >* characters;
+		map<char, string >* characters;
 		switch(m_state)
 		{
 			case HTML:
@@ -117,7 +118,7 @@ template<typename Sink> std::streamsize Fastcgipp::Fcgistream::Encoder::write(Si
 		}
 
 		const char* start=s;
-		typename std::map<char, std::string >::const_iterator it;
+		typename map<char, string >::const_iterator it;
 		for(const char* i=s; i < s+n; ++i)
 		{
 			it=characters->find(*i);
@@ -134,11 +135,11 @@ template<typename Sink> std::streamsize Fastcgipp::Fcgistream::Encoder::write(Si
 	return n;
 }
 
-std::streamsize Fastcgipp::FcgistreamSink::write(const char* s, std::streamsize n)
+streamsize Fastcgipp::FcgistreamSink::write(const char* s, streamsize n)
 {
 	using namespace std;
 	using namespace Protocol;
-	const std::streamsize totalUsed=n;
+	const streamsize totalUsed=n;
 	while(1)
 	{{
 		if(!n)
@@ -150,7 +151,7 @@ std::streamsize Fastcgipp::FcgistreamSink::write(const char* s, std::streamsize 
 		Block dataBlock(m_transceiver->requestWrite(size));
 		size=(dataBlock.size/chunkSize)*chunkSize;
 
-		uint16_t contentLength=std::min(size-sizeof(Header), size_t(n));
+		uint16_t contentLength=min(size-sizeof(Header), size_t(n));
 		memcpy(dataBlock.data+sizeof(Header), s, contentLength);
 
 		s+=contentLength;
@@ -171,7 +172,7 @@ std::streamsize Fastcgipp::FcgistreamSink::write(const char* s, std::streamsize 
 	return totalUsed;
 }
 
-void Fastcgipp::FcgistreamSink::dump(std::basic_istream<char>& stream)
+void Fastcgipp::FcgistreamSink::dump(basic_istream<char>& stream)
 {
 	const size_t bufferSize=32768;
 	char buffer[bufferSize];
@@ -201,14 +202,14 @@ Fastcgipp::Fcgistream::Fcgistream():
 	m_sink(fixPush<FcgistreamSink, char, char>(*this, FcgistreamSink(), 8192))
 {}
 
-std::ostream& Fastcgipp::operator<<(std::ostream& os, const encoding& enc)
+ostream& Fastcgipp::operator<<(ostream& os, const encoding& enc)
 {
 	try
 	{
 		Fcgistream& stream(dynamic_cast<Fcgistream&>(os));
 		stream.setEncoding(enc.m_type);
 	}
-	catch(std::bad_cast& bc)
+	catch(bad_cast& bc)
 	{
 	}
 
