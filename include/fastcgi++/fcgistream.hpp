@@ -185,21 +185,20 @@ namespace Fastcgipp
 
 	//! Stream class for output of client data through FastCGI
 	/*!
-	 * This class is derived from std::basic_ostream<charT, traits>. It acts just
+	 * This class is derived from std::string. It acts just
 	 * the same as any stream does with the added feature of the dump() function
 	 * and the ability to set output %encoding with the setEncoding() function
 	 * and the Fastcgipp::encoding manipulator.
 	 *
-	 * @tparam charT Character type (char or wchar_t)
 	 * @tparam traits Character traits
 	 * @sa OutputEncoding
 	 */
-	template <typename charT> class Fcgistream: public boost::iostreams::filtering_stream<boost::iostreams::output, charT>
+	class Fcgistream: public boost::iostreams::filtering_stream<boost::iostreams::output>
 	{
 	private:
-		struct Encoder: public boost::iostreams::multichar_filter<boost::iostreams::output, charT>
+		struct Encoder: public boost::iostreams::multichar_filter<boost::iostreams::output>
 		{
-			template<typename Sink> std::streamsize write(Sink& dest, const charT* s, std::streamsize n);
+			template<typename Sink> std::streamsize write(Sink& dest, const char* s, std::streamsize n);
 			OutputEncoding m_state;
 			Encoder(): m_state(NONE) {}
 		};
@@ -214,7 +213,7 @@ namespace Fastcgipp
 		void set(Protocol::FullId id, Transceiver& transceiver, Protocol::RecordType type) { m_sink.set(id, transceiver, type); }
 
 		//! Called to flush all buffers to the sink
-		void flush() { boost::iostreams::filtering_stream<boost::iostreams::output, charT>::strict_sync(); }
+		void flush() { boost::iostreams::filtering_stream<boost::iostreams::output>::strict_sync(); }
 		
 		//! Dumps raw data directly into the FastCGI protocol
 		/*!
@@ -261,7 +260,7 @@ namespace Fastcgipp
 		encoding(OutputEncoding type): m_type(type) {}
 	};
 
-	template<class charT, class Traits> std::basic_ostream<charT, Traits>& operator<<(std::basic_ostream<charT, Traits>& os, const encoding& enc);
+	std::ostream& operator<<( std::ostream& os, const Fastcgipp::encoding& enc );
 }
 
 #endif

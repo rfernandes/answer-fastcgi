@@ -80,7 +80,6 @@
 
 #include <locale>
 // for mbstate_t
-#include <wchar.h>
 // for std::size_t
 #include <cstddef>
 

@@ -48,12 +48,7 @@ void error_log(const char* msg)
 // 1) Be derived from Fastcgipp::Request
 // 2) Define the virtual response() member function from Fastcgipp::Request()
 
-// First things first let's decide on what kind of character set we will use.
-// Since we are just displaying an image, we won't need unicode so we don't
-// need to use wide characters. We'll keep everything as narrow characters
-// and pass the 'char' type along to the Fastcgipp::Request template.
-
-class ShowGnu: public Fastcgipp::Request<char>
+class ShowGnu: public Fastcgipp::Request
 {
 	// Now we define the actual function that sends a response to the client.
 	bool response()
@@ -110,7 +105,7 @@ class ShowGnu: public Fastcgipp::Request<char>
 		// To send raw binary data to the client, the streams have a
 		// dump function that bypasses the streambuffer and it's code
 		// conversion. The function is overloaded to either:
-		// out.dump(basic_istream<char>& stream); or
+		// out.dump(basic_istream& stream); or
 		// out.dump(char* data, size_t size);
 		//
 		// Remember that if we are using wide characters internally, the stream

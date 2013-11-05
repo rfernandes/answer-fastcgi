@@ -52,11 +52,11 @@ void error_log(const char* msg)
 // Anyway, moving right along, the streams will code convert all the UTF-32 data to UTF-8
 // before it is sent out to the client. This way we get the best of both worlds.
 //
-// So, whenever we are going to use UTF-8, our template parameter for Fastcgipp::Request<charT>
+// So, whenever we are going to use UTF-8, our template parameter for Fastcgipp::Request
 // should be wchar_t. Keep in mind that this suddendly makes
 // everything wide character and utf compatible. Including HTTP header data (cookies, urls, yada-yada).
 
-class Echo: public Fastcgipp::Request<wchar_t>
+class Echo: public Fastcgipp::Request
 {
 	bool response()
 	{
@@ -100,11 +100,11 @@ class Echo: public Fastcgipp::Request<wchar_t>
 		out << "<h1>Path Data</h1>";
 		if(environment().pathInfo.size())
 		{
-			std::wstring preTab;
-			for(Http::Environment<wchar_t>::PathInfo::const_iterator it=environment().pathInfo.begin(); it!=environment().pathInfo.end(); ++it)
+			std::string preTab;
+			for(Http::Environment::PathInfo::const_iterator it=environment().pathInfo.begin(); it!=environment().pathInfo.end(); ++it)
 			{
 				out << preTab << encoding(HTML) << *it << encoding(NONE) << "<br />";
-				preTab += L"&nbsp;&nbsp;&nbsp;";
+				preTab += "&nbsp;&nbsp;&nbsp;";
 			}
 		}
 		else
@@ -113,7 +113,7 @@ class Echo: public Fastcgipp::Request<wchar_t>
 		// Let's see the GET data
 		out << "<h1>GET Data</h1>";
 		if(environment().gets.size())
-			for(Http::Environment<wchar_t>::Gets::const_iterator it=environment().gets.begin(); it!=environment().gets.end(); ++it)
+			for(Http::Environment::Gets::const_iterator it=environment().gets.begin(); it!=environment().gets.end(); ++it)
 				out << "<b>" << encoding(HTML) << it->first << encoding(NONE) << ":</b> " << encoding(HTML) << it->second << encoding(NONE) << "<br />";
 		else
 			out << "<p>No GET data</p>";
@@ -121,7 +121,7 @@ class Echo: public Fastcgipp::Request<wchar_t>
 		// Let's see the cookie data
 		out << "<h1>Cookie Data</h1>";
 		if(environment().cookies.size())
-			for(Http::Environment<wchar_t>::Cookies::const_iterator it=environment().cookies.begin(); it!=environment().cookies.end(); ++it)
+			for(Http::Environment::Cookies::const_iterator it=environment().cookies.begin(); it!=environment().cookies.end(); ++it)
 				out << "<b>" << encoding(HTML) << it->first << encoding(NONE) << ":</b> " << encoding(HTML) << it->second << encoding(NONE) << "<br />";
 		else
 			out << "<p>No Cookie data</p>";
@@ -130,10 +130,10 @@ class Echo: public Fastcgipp::Request<wchar_t>
 		out << "<h1>POST Data</h1>";
 		if(environment().posts.size())
 		{
-			for(Http::Environment<wchar_t>::Posts::const_iterator it=environment().posts.begin(); it!=environment().posts.end(); ++it)
+			for(Http::Environment::Posts::const_iterator it=environment().posts.begin(); it!=environment().posts.end(); ++it)
 			{
 				out << "<h2>" << encoding(HTML) << it->first << encoding(NONE) << "</h2>";
-				if(it->second.type==Http::Post<wchar_t>::form)
+				if(it->second.type==Http::Post::form)
 				{
 					out << "<p><b>Type:</b> form data<br />";
 					out << "<b>Value:</b> " << encoding(HTML) << it->second.value << encoding(NONE) << "</p>";

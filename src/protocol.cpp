@@ -19,7 +19,7 @@
 ****************************************************************************/
 
 
-#include <fastcgi++/protocol.hpp>
+#include "fastcgi++/protocol.hpp"
 
 void Fastcgipp::Protocol::processParamHeader(const char* data, size_t dataSize, const char*& name, size_t& nameSize, const char*& value, size_t& valueSize)
 {

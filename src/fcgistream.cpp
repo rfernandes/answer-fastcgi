@@ -7,9 +7,9 @@
 #include "fastcgi++/fcgistream.hpp"
 #include "utf8_codecvt.hpp"
 
-template<typename charT> template<typename Sink> std::streamsize Fastcgipp::Fcgistream<charT>::Encoder::write(Sink& dest, const charT* s, std::streamsize n)
+template<typename Sink> std::streamsize Fastcgipp::Fcgistream::Encoder::write(Sink& dest, const char* s, std::streamsize n)
 {
-	static std::map<charT, std::basic_string<charT> > htmlCharacters;
+	static std::map<char, std::string > htmlCharacters;
 	if(!htmlCharacters.size())
 	{
 		const char quot[]="&quot;";
@@ -28,7 +28,7 @@ template<typename charT> template<typename Sink> std::streamsize Fastcgipp::Fcgi
 		std::copy(apos, apos+sizeof(apos)-1, std::back_inserter(htmlCharacters['\'']));
 	}
 
-	static std::map<charT, std::basic_string<charT> > urlCharacters;
+	static std::map<char, std::string > urlCharacters;
 	if(!urlCharacters.size())
 	{
 		const char exclaim[]="%21";
@@ -105,7 +105,7 @@ template<typename charT> template<typename Sink> std::streamsize Fastcgipp::Fcgi
 		boost::iostreams::write(dest, s, n);
 	else
 	{
-		std::map<charT, std::basic_string<charT> >* characters;
+		std::map<char, std::string >* characters;
 		switch(m_state)
 		{
 			case HTML:
@@ -116,9 +116,9 @@ template<typename charT> template<typename Sink> std::streamsize Fastcgipp::Fcgi
 				break;
 		}
 
-		const charT* start=s;
-		typename std::map<charT, std::basic_string<charT> >::const_iterator it;
-		for(const charT* i=s; i < s+n; ++i)
+		const char* start=s;
+		typename std::map<char, std::string >::const_iterator it;
+		for(const char* i=s; i < s+n; ++i)
 		{
 			it=characters->find(*i);
 			if(it!=characters->end())
@@ -196,20 +196,16 @@ template<> Fastcgipp::FcgistreamSink& fixPush<Fastcgipp::FcgistreamSink, char, w
 }
 
 
-template Fastcgipp::Fcgistream<char>::Fcgistream();
-template Fastcgipp::Fcgistream<wchar_t>::Fcgistream();
-template<typename charT> Fastcgipp::Fcgistream<charT>::Fcgistream():
-	m_encoder(fixPush<Encoder, charT, charT>(*this, Encoder(), 0)),
-	m_sink(fixPush<FcgistreamSink, char, charT>(*this, FcgistreamSink(), 8192))
+Fastcgipp::Fcgistream::Fcgistream():
+	m_encoder(fixPush<Encoder, char, char>(*this, Encoder(), 0)),
+	m_sink(fixPush<FcgistreamSink, char, char>(*this, FcgistreamSink(), 8192))
 {}
 
-template std::basic_ostream<char, std::char_traits<char> >& Fastcgipp::operator<< <char, std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >& os, const encoding& enc);
-template std::basic_ostream<wchar_t, std::char_traits<wchar_t> >& Fastcgipp::operator<< <wchar_t, std::char_traits<wchar_t> >(std::basic_ostream<wchar_t, std::char_traits<wchar_t> >& os, const encoding& enc);
-template<class charT, class Traits> std::basic_ostream<charT, Traits>& Fastcgipp::operator<<(std::basic_ostream<charT, Traits>& os, const encoding& enc)
+std::ostream& Fastcgipp::operator<<(std::ostream& os, const encoding& enc)
 {
 	try
 	{
-		Fcgistream<charT>& stream(dynamic_cast<Fcgistream<charT>&>(os));
+		Fcgistream& stream(dynamic_cast<Fcgistream&>(os));
 		stream.setEncoding(enc.m_type);
 	}
 	catch(std::bad_cast& bc)

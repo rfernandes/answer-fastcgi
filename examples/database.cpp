@@ -43,7 +43,7 @@ struct IpAddress: public ASql::Data::Set
 	ASQL_BUILDSET((ASql::Data::Index(data)))
 };
 
-class Database: public Fastcgipp::Request<wchar_t>
+class Database: public Fastcgipp::Request
 {
 	static const char insertStatementString[];
 	static const char updateStatementString[];
