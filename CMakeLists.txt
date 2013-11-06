@@ -17,7 +17,6 @@ add_library(libfastcgipp SHARED
   src/manager.cpp
   src/transceiver.cpp
   src/fcgistream.cpp
-  src/utf8_codecvt_facet.cpp
 )
 
 include_directories(SYSTEM

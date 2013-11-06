@@ -92,6 +92,8 @@ void Http::Environment::fill(const char* data, size_t size)
 		const char* name;
 		const char* value;
 		Protocol::processParamHeader(data, size, name, nameSize, value, valueSize);
+		
+		cerr << name << endl;
 		size-=value-data+valueSize;
 		data=value+valueSize;
 
