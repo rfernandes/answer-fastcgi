@@ -65,7 +65,10 @@ fastcgipp
 install (TARGETS ${PROJECT_NAME} DESTINATION lib COMPONENT library)
 
 file (GLOB headersHPP
-	include/answer/*.hpp)
-install (FILES ${headersHPP} DESTINATION include/answer COMPONENT headers)
+	include/fastcgi++/*.hpp)
+file (GLOB headersH
+	include/fastcgi++/*.h)
+install (FILES ${headersHPP} DESTINATION include/fastcgi++/ COMPONENT headers)
+install (FILES ${headersH} DESTINATION include/fastcgi++/ COMPONENT headers)
 
 # add_subdirectory(examples)

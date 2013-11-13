@@ -26,6 +26,8 @@
 #include <string>
 #include <exception>
 
+#include "config.h"
+
 #if defined (HAVE_ENDIAN_H)
 #include <endian.h>
 #elif defined (HAVE_MACHINE_ENDIAN_H)
