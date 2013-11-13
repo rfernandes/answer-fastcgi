@@ -20,6 +20,7 @@
 
 
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include "fastcgi++/http.hpp"
 #include "fastcgi++/protocol.hpp"
@@ -93,7 +94,15 @@ void Http::Environment::fill(const char* data, size_t size)
 		const char* value;
 		Protocol::processParamHeader(data, size, name, nameSize, value, valueSize);
 		
-		cerr << name << endl;
+		string nameStr(name, nameSize);
+		string valueStr(value, valueSize);
+		if (boost::starts_with("HTTP", nameStr))
+		{
+			headers.insert(make_pair(nameStr, valueStr));
+		}else{
+			environment.insert(make_pair(nameStr, valueStr));
+		}
+		
 		size-=value-data+valueSize;
 		data=value+valueSize;
 
@@ -101,7 +110,7 @@ void Http::Environment::fill(const char* data, size_t size)
 		{
 		case 9:
 			if(!memcmp(name, "HTTP_HOST", 9))
-				charToString(value, valueSize, host);
+				host = valueStr;
 			else if(!memcmp(name, "PATH_INFO", 9))
 			{
 				boost::scoped_array<char> buffer(new char[valueSize]);
@@ -114,8 +123,7 @@ void Http::Environment::fill(const char* data, size_t size)
 						if(size > 0)
 						{
 							percentEscapedToRealBytes(source-size, buffer.get(), size);
-							pathInfo.push_back(string());
-							charToString(buffer.get(), size, pathInfo.back());
+							pathInfo.push_back(valueStr);
 						}
 						size=-1;						
 					}
@@ -124,7 +132,7 @@ void Http::Environment::fill(const char* data, size_t size)
 			break;
 		case 11:
 			if(!memcmp(name, "HTTP_ACCEPT", 11))
-				charToString(value, valueSize, acceptContentTypes);
+				acceptContentTypes = valueStr;
 			else if(!memcmp(name, "HTTP_COOKIE", 11))
 				decodeUrlEncoded(value, valueSize, cookies, ';');
 			else if(!memcmp(name, "SERVER_ADDR", 11))
@@ -136,17 +144,17 @@ void Http::Environment::fill(const char* data, size_t size)
 			else if(!memcmp(name, "REMOTE_PORT", 11))
 				remotePort=atoi(value, value+valueSize);
 			else if(!memcmp(name, "SCRIPT_NAME", 11))
-				charToString(value, valueSize, scriptName);
+				scriptName = valueStr;
 			else if(!memcmp(name, "REQUEST_URI", 11))
-				charToString(value, valueSize, requestUri);
+				requestUri = valueStr;
 			break;
 		case 12:
 			if(!memcmp(name, "HTTP_REFERER", 12) && valueSize)
-				charToString(value, valueSize, referer);
+				referer = valueStr;
 			else if(!memcmp(name, "CONTENT_TYPE", 12))
 			{
 				const char* end=(char*)memchr(value, ';', valueSize);
-				charToString(value, end?end-value:valueSize, contentType);
+				referer = contentType;
 				if(end)
 				{
 					const char* start=(char*)memchr(end, '=', valueSize-(end-data));
@@ -163,7 +171,7 @@ void Http::Environment::fill(const char* data, size_t size)
 			break;
 		case 13:
 			if(!memcmp(name, "DOCUMENT_ROOT", 13))
-				charToString(value, valueSize, root);
+				root = valueStr;
 			break;
 		case 14:
 			if(!memcmp(name, "REQUEST_METHOD", 14))
@@ -196,7 +204,7 @@ void Http::Environment::fill(const char* data, size_t size)
 			break;
 		case 15:
 			if(!memcmp(name, "HTTP_USER_AGENT", 15))
-				charToString(value, valueSize, userAgent);
+				userAgent = valueStr;
 			else if(!memcmp(name, "HTTP_KEEP_ALIVE", 15))
 				keepAlive=atoi(value, value+valueSize);
 			break;
@@ -206,11 +214,11 @@ void Http::Environment::fill(const char* data, size_t size)
 			break;
 		case 19:
 			if(!memcmp(name, "HTTP_ACCEPT_CHARSET", 19))
-				charToString(value, valueSize, acceptCharsets);
+				acceptCharsets = valueStr;
 			break;
 		case 20:
 			if(!memcmp(name, "HTTP_ACCEPT_LANGUAGE", 20))
-				charToString(value, valueSize, acceptLanguages);
+				acceptLanguages = valueStr;
 			break;
 		case 22:
 			if(!memcmp(name, "HTTP_IF_MODIFIED_SINCE", 22))
@@ -359,15 +367,15 @@ void Http::Environment::parsePostsMultipart()
 
 					if(nameSize != -1)
 					{
-						string name;
-						charToString(nameStart, nameSize, name);
+						string name(nameStart, nameSize);
 		
 						Post thePost;
 						if(contentTypeSize != -1)
 						{
 							thePost.type=Post::file;
-							charToString(contentTypeStart, contentTypeSize, thePost.contentType);
-							if(filenameSize != -1) charToString(filenameStart, filenameSize, thePost.filename);
+							thePost.contentType = string(contentTypeStart, contentTypeSize);
+							if(filenameSize != -1)
+								thePost.filename = string(filenameStart, filenameSize);
 							thePost.m_size=bodySize;
 							if(bodySize)
 							{
@@ -378,7 +386,7 @@ void Http::Environment::parsePostsMultipart()
 						else
 						{
 							thePost.type=Post::form;
-							charToString(bodyStart, bodySize, thePost.value);
+							thePost.value = string(bodyStart, bodySize);
 						}
 						posts.emplace_back(name, thePost);
 					}
@@ -418,12 +426,11 @@ void Http::Environment::parsePostsUrlEncoded()
 		{
 			valueSize=percentEscapedToRealBytes(valueStart, valueStart, i-valueStart);
 
-			string name;
-			charToString(nameStart, nameSize, name);
+			string name(nameStart, nameSize);
 			nameStart=i+1;
 			Post thePost;
 			thePost.type=Post::form;
-			charToString(valueStart, valueSize, thePost.value);
+			thePost.value = string(valueStart, valueSize);
 			valueStart=0;
 			posts.emplace_back(name, thePost);
 		}
@@ -472,11 +479,9 @@ void Http::decodeUrlEncoded( const char* data, size_t size, vector< pair< string
 			{
 				valueSize=percentEscapedToRealBytes(valueStart, valueStart, i-valueStart);
 
-				string name;
-				charToString(nameStart, nameSize, name);
+				string name(nameStart, nameSize);
 				nameStart=i+1;
-				string value;
-				charToString(valueStart, valueSize, value);
+				string value(valueStart, valueSize);
 				output.emplace_back(name, value);
 				valueStart=0;
 			}

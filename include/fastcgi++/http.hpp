@@ -316,6 +316,12 @@ namespace Fastcgipp
 			//! Clear the post buffer
 			void clearPostBuffer() { postBuffer.reset(); pPostBuffer=0; }
 
+			typedef std::map<std::string, std::string > Headers;
+			Headers headers;
+
+			typedef std::map<std::string, std::string > EnvironmentMap;
+			EnvironmentMap environment;
+			
 			Environment(): requestMethod(HTTP_METHOD_ERROR), etag(0), keepAlive(0), contentLength(0), serverPort(0), remotePort(0) {}
 		private:
 			//! Raw string of characters representing the post boundary
@@ -330,24 +336,6 @@ namespace Fastcgipp
 			//! Returns minimum buffer size remaining
 			size_t minPostBufferSize(const size_t size) { return std::min(size, size_t(postBuffer.get()+contentLength-pPostBuffer)); }
 		};
-
-		//! Convert a char string to a std::wstring
-		/*!
-		 * @param[in] data First byte in char string
-		 * @param[in] size Size in bytes of the string (no null terminator)
-		 * @param[out] string Reference to the wstring that should be modified
-		 * @return Returns true on success, false on failure
-		 */
-		void charToString(const char* data, size_t size, std::wstring& string);
-
-		//! Convert a char string to a std::string
-		/*!
-		 * @param[in] data First byte in char string
-		 * @param[in] size Size in bytes of the string (no null terminator)
-		 * @param[out] string Reference to the string that should be modified
-		 * @return Returns true on success, false on failure
-		 */
-		inline void charToString(const char* data, size_t size, std::string& string) { string.assign(data, size); }
 
 		//! Convert a char string to an integer
 		/*!

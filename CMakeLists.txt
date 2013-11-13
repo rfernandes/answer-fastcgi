@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 
-include_directories(BEFORE ./include)
+project(fastcgipp)
 
 add_definitions(
 -DHAVE_ENDIAN_H
@@ -10,7 +10,7 @@ add_definitions(
 
 find_package(Boost COMPONENTS system thread)
 
-add_library(libfastcgipp SHARED
+add_library(fastcgipp SHARED
   src/http.cpp
   src/protocol.cpp
   src/request.cpp
@@ -19,11 +19,12 @@ add_library(libfastcgipp SHARED
   src/fcgistream.cpp
 )
 
+include_directories(BEFORE ./include)
 include_directories(SYSTEM
 	${Boost_INCLUDE_DIRS}
 )
 
-target_link_libraries(libfastcgipp
+target_link_libraries(fastcgipp
 ${Boost_LIBRARIES}
 )
 
@@ -32,7 +33,7 @@ examples/echo.cpp
 )
 
 target_link_libraries(echo
-libfastcgipp
+fastcgipp
 )
 
 add_executable(showgnu
@@ -41,7 +42,7 @@ examples/showgnu.cpp
 
 target_link_libraries(showgnu
 
-libfastcgipp
+fastcgipp
 )
 
 
@@ -50,7 +51,7 @@ examples/timer.cpp
 )
 
 target_link_libraries(timer
-libfastcgipp
+fastcgipp
 )
 
 add_executable(upload
@@ -58,11 +59,13 @@ examples/upload.cpp
 )
 
 target_link_libraries(upload
-libfastcgipp
+fastcgipp
 )
 
-# add_executable(session
-# examples/session.cpp
-# )
+install (TARGETS ${PROJECT_NAME} DESTINATION lib COMPONENT library)
+
+file (GLOB headersHPP
+	include/answer/*.hpp)
+install (FILES ${headersHPP} DESTINATION include/answer COMPONENT headers)
 
 # add_subdirectory(examples)
