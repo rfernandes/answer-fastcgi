@@ -44,7 +44,8 @@ void Fastcgipp::Request::complete()
 	transceiver->secureWrite(sizeof(Header)+sizeof(EndRequest), id, killCon);
 }
 
-bool Fastcgipp::Request::handler()
+bool Fastcgipp::Request::handler
+()
 {
 	using namespace Protocol;
 	using namespace std;
@@ -174,7 +175,8 @@ void Fastcgipp::Request::errorHandler(const exception& error)
 		"<title>500 Internal Server Error</title>"\
 	"</head>"\
 	"<body>"\
-		"<h1>500 Internal Server Error</h1>"\
+		"<h1>500 Internal Server Error</h1>"
+		<< error.what() <<
 	"</body>"\
 "</html>";
 

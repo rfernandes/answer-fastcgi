@@ -3,12 +3,26 @@ cmake_minimum_required(VERSION 2.6)
 project(fastcgipp)
 
 add_definitions(
--DHAVE_ENDIAN_H
--DPACKAGE_VERSION="2.1"
 -std=c++11
 )
 
 find_package(Boost COMPONENTS system thread)
+
+include_directories(BEFORE
+  ./include
+  ${CMAKE_CURRENT_BINARY_DIR}
+)
+include_directories(SYSTEM
+	${Boost_INCLUDE_DIRS}
+)
+
+
+include(TestBigEndian)
+test_big_endian(BIGENDIAN)
+set(PACKAGE_NAME fastcgi++)
+set(PACKAGE_VERSION 3.0)
+configure_file(include/fastcgi++/config.h.in "${CMAKE_CURRENT_BINARY_DIR}/config.h")
+
 
 add_library(fastcgipp SHARED
   src/http.cpp
@@ -17,50 +31,20 @@ add_library(fastcgipp SHARED
   src/manager.cpp
   src/transceiver.cpp
   src/fcgistream.cpp
-)
-
-include_directories(BEFORE ./include)
-include_directories(SYSTEM
-	${Boost_INCLUDE_DIRS}
+  
+  include/fastcgi++/config.h.in
 )
 
 target_link_libraries(fastcgipp
 ${Boost_LIBRARIES}
 )
 
-add_executable(echo
-examples/echo.cpp
-)
+# set_target_properties(fastcgipp PROPERTIES
+#  PUBLIC_HEADER "${CMAKE_CURRENT_BINARY_DIR}/config.h"
+# )
 
-target_link_libraries(echo
-fastcgipp
-)
+add_subdirectory(examples)
 
-add_executable(showgnu
-examples/showgnu.cpp
-)
-
-target_link_libraries(showgnu
-
-fastcgipp
-)
-
-
-add_executable(timer
-examples/timer.cpp
-)
-
-target_link_libraries(timer
-fastcgipp
-)
-
-add_executable(upload
-examples/upload.cpp
-)
-
-target_link_libraries(upload
-fastcgipp
-)
 
 install (TARGETS ${PROJECT_NAME} DESTINATION lib COMPONENT library)
 
