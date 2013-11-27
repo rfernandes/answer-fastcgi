@@ -154,7 +154,7 @@ void Http::Environment::fill(const char* data, size_t size)
 			else if(!memcmp(name, "CONTENT_TYPE", 12))
 			{
 				const char* end=(char*)memchr(value, ';', valueSize);
-				referer = contentType;
+				contentType = valueStr.substr(0, valueStr.find(';'));
 				if(end)
 				{
 					const char* start=(char*)memchr(end, '=', valueSize-(end-data));
